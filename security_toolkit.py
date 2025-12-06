@@ -125,6 +125,7 @@ class SecurityToolkit:
         self.create_rsa_tab()
         self.create_des_tab()
         self.create_sdes_tab()
+        self.create_md5_tab()
     
     def create_status_bar(self):
         """Create status bar at bottom"""
@@ -713,6 +714,153 @@ class SecurityToolkit:
         except Exception as ex:
             messagebox.showerror("Error", f"Decryption failed: {str(ex)}")
     
+    # ==================== MD5 FIRST ROUND TAB ====================
+    
+    def create_md5_tab(self):
+        """Create MD5 First Round visualization tab"""
+        md5_frame = ttk.Frame(self.notebook, style='Dark.TFrame')
+        self.notebook.add(md5_frame, text='🛡️ MD5')
+        
+        # Input frame
+        input_frame = ttk.Frame(md5_frame, style='Card.TFrame')
+        input_frame.pack(fill='x', padx=15, pady=15)
+        
+        ttk.Label(input_frame, text="MD5 First Round Visualization", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        ttk.Label(input_frame, text="Enter Text to Hash:", style='Info.TLabel').pack(anchor='w', padx=10, pady=(5, 5))
+        
+        input_container = ttk.Frame(input_frame, style='Card.TFrame')
+        input_container.pack(fill='x', padx=10, pady=(0, 10))
+        
+        self.md5_entry = tk.Entry(input_container, 
+                                bg='#0a0e27', fg='#0f0',
+                                font=('Consolas', 11),
+                                insertbackground='#0f0',
+                                relief='flat', width=40)
+        self.md5_entry.pack(side='left', padx=(0, 10), pady=5, ipady=5, fill='x', expand=True)
+        self.md5_entry.insert(0, "security")
+        
+        ttk.Button(input_container, text="⚡ Run Round 1",
+                  style='Action.TButton',
+                  command=self.run_md5_round1).pack(side='left')
+
+        # Info Frame
+        self.md5_info_label = tk.Label(input_frame, text="", 
+                                     bg='#16213e', fg='#00d4ff',
+                                     font=('Consolas', 9), justify='left')
+        self.md5_info_label.pack(anchor='w', padx=10, pady=(0, 10))
+        
+        # Log Output frame
+        output_frame = ttk.Frame(md5_frame, style='Card.TFrame')
+        output_frame.pack(fill='both', expand=True, padx=15, pady=(0, 15))
+        
+        ttk.Label(output_frame, text="Round 1 Steps Log (16 Operations)", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        self.md5_log = scrolledtext.ScrolledText(output_frame, 
+                                                bg='#0a0e27', fg='#0f0',
+                                                font=('Consolas', 9),
+                                                relief='flat', padx=15, pady=10,
+                                                state='disabled')
+        self.md5_log.pack(fill='both', expand=True, padx=10, pady=(0, 10))
+        
+    def run_md5_round1(self):
+        """Execute MD5 First Round logic"""
+        text = self.md5_entry.get()
+        if not text:
+            messagebox.showwarning("Input Error", "Please enter text to hash!")
+            return
+            
+        try:
+            # 1. Padding Logic (from provided code)
+            msg_bytes = bytearray(text.encode('utf-8'))
+            msg_len_bits = len(msg_bytes) * 8
+            import math
+            blocks = math.floor(msg_len_bits / 512)
+            len_block = msg_len_bits - (blocks * 512)
+            if len_block < 448:
+                pad_len = 512 - (len_block + 64)
+            else:
+                pad_len = (512 - (len_block + 64)) + 512
+            
+            total_len_bits = msg_len_bits + pad_len + 64
+            
+            info_text = (f"Original Length: {len(text)} chars ({msg_len_bits} bits)\n"
+                         f"Padding Added:   {pad_len} bits\n"
+                         f"Total Length:    {total_len_bits} bits (Multiple of 512)")
+            self.md5_info_label.config(text=info_text)
+            
+            # 2. Initialize State
+            a = 0x67452301
+            b = 0xefcdab89
+            c = 0x98badcfe
+            d = 0x10325476
+            
+            # Constants
+            s1 = [7, 12, 17, 22]
+            t = [
+                0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
+                0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
+                0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
+                0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821
+            ]
+            
+            log_text = f"Initial State:\n  A: {a:08x}\n  B: {b:08x}\n  C: {c:08x}\n  D: {d:08x}\n\n"
+            log_text += "=" * 60 + "\n"
+            
+            # 3. Simulate Round 1 (16 operations)
+            # In a real MD5, we'd process 512-bit blocks. Here we simulate the first block's first round.
+            # We need 'M' (message block). For demo, strictly padding isn't fully constructed in the user code, 
+            # so we'll mock the M[0]...M[15] as part of the visualizer or just use 0 if not enough data, 
+            # but to be accurate we should construct the block.
+            
+            # Construct the padded block (simplified for demonstration of Round 1 on the first block)
+            # Append '1' bit (0x80 byte)
+            msg_bytes.append(0x80)
+            while (len(msg_bytes) * 8) % 512 != 448:
+                msg_bytes.append(0)
+            
+            # Append length (64 bits, little endian)
+            msg_bytes += (msg_len_bits).to_bytes(8, byteorder='little')
+            
+            # Extract first 16 words (32-bit blocks)
+            M = []
+            for i in range(16):
+                val = int.from_bytes(msg_bytes[i*4:(i+1)*4], byteorder='little')
+                M.append(val)
+                
+            # Round 1 Loop
+            for i in range(16):
+                # Save old state for display (optional, but we show result after)
+                
+                # F function
+                f = (b & c) | (~b & d)
+                
+                # Operation: a = b + ((a + F(b,c,d) + M[k] + T[i]) <<< s)
+                temp = (a + f + M[i] + t[i]) & 0xFFFFFFFF
+                shift = s1[i % 4]
+                rotated = ((temp << shift) | (temp >> (32 - shift))) & 0xFFFFFFFF
+                new_b = (b + rotated) & 0xFFFFFFFF
+                
+                # Rotate variables
+                a, b, c, d = d, new_b, b, c
+                
+                log_text += f"Step {i+1:02d}:\n"
+                log_text += f"  Function F result: {f:08x}\n"
+                log_text += f"  M[{i}]:            {M[i]:08x}\n"
+                log_text += f"  Shift:            {shift}\n"
+                log_text += f"  New State -> A:{a:08x} B:{b:08x} C:{c:08x} D:{d:08x}\n"
+                log_text += "-" * 40 + "\n"
+                
+            self.md5_log.config(state='normal')
+            self.md5_log.delete('1.0', 'end')
+            self.md5_log.insert('1.0', log_text)
+            self.md5_log.config(state='disabled')
+            
+            self.set_status("MD5 Round 1 simulated successfully")
+
+        except Exception as ex:
+            messagebox.showerror("Error", f"MD5 execution failed: {str(ex)}")
+
     # ==================== UTILITY FUNCTIONS ====================
     
     def copy_to_clipboard(self, text_widget):
