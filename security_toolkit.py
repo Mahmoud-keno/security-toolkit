@@ -6,6 +6,8 @@ Integrates RSA, DES Key Generation, and S-DES Encryption/Decryption
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import random
+import struct
+import math
 
 
 def is_prime(n):
@@ -126,6 +128,8 @@ class SecurityToolkit:
         self.create_des_tab()
         self.create_sdes_tab()
         self.create_md5_tab()
+        self.create_sha1_tab()
+        self.create_full_md5_tab()
     
     def create_status_bar(self):
         """Create status bar at bottom"""
@@ -860,6 +864,253 @@ class SecurityToolkit:
 
         except Exception as ex:
             messagebox.showerror("Error", f"MD5 execution failed: {str(ex)}")
+
+    # ==================== SHA-1 TAB ====================
+    
+    def create_sha1_tab(self):
+        """Create SHA-1 Hash tab"""
+        sha1_frame = ttk.Frame(self.notebook, style='Dark.TFrame')
+        self.notebook.add(sha1_frame, text='🛡️ SHA-1')
+        
+        # Input frame
+        input_frame = ttk.Frame(sha1_frame, style='Card.TFrame')
+        input_frame.pack(fill='x', padx=15, pady=15)
+        
+        ttk.Label(input_frame, text="SHA-1 Secure Hash Algorithm", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        ttk.Label(input_frame, text="Enter Text to Hash:", style='Info.TLabel').pack(anchor='w', padx=10, pady=(5, 5))
+        
+        input_container = ttk.Frame(input_frame, style='Card.TFrame')
+        input_container.pack(fill='x', padx=10, pady=(0, 10))
+        
+        self.sha1_entry = tk.Entry(input_container, 
+                                 bg='#0a0e27', fg='#0f0',
+                                 font=('Consolas', 11),
+                                 insertbackground='#0f0',
+                                 relief='flat', width=40)
+        self.sha1_entry.pack(side='left', padx=(0, 10), pady=5, ipady=5, fill='x', expand=True)
+        
+        ttk.Button(input_container, text="⚡ Calculate Hash",
+                  style='Action.TButton',
+                  command=self.run_sha1).pack(side='left')
+
+        # Output frame
+        output_frame = ttk.Frame(sha1_frame, style='Card.TFrame')
+        output_frame.pack(fill='both', expand=True, padx=15, pady=(0, 15))
+        
+        ttk.Label(output_frame, text="SHA-1 Digest (160-bit)", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        result_container = ttk.Frame(output_frame, style='Card.TFrame')
+        result_container.pack(fill='x', padx=10, pady=(0, 10))
+        
+        self.sha1_result = tk.Label(result_container,
+                                  bg='#0a0e27', fg='#00d4ff',
+                                  font=('Consolas', 12, 'bold'),
+                                  anchor='w', padx=10, pady=10)
+        self.sha1_result.pack(side='left', fill='x', expand=True)
+        
+        ttk.Button(result_container, text="📋",
+                  style='Secondary.TButton',
+                  command=lambda: self.copy_text(self.sha1_result.cget('text'))).pack(side='left', padx=5)
+
+    def left_rotate(self, n, b):
+        """Left rotate n by b bits."""
+        return ((n << b) | (n >> (32 - b))) & 0xffffffff
+
+    def sha1_hash(self, message):
+        """Implementation of SHA-1 algorithm"""
+        # Step 1: Convert message to bytes
+        if isinstance(message, str):
+            data = bytearray(message, 'utf-8')
+        else:
+            data = bytearray(message)
+        
+        orig_len_bits = len(data) * 8
+        
+        # Step 2: Append padding
+        data.append(0x80)
+        while (len(data) * 8) % 512 != 448:
+            data.append(0x00)
+        
+        # Step 3: Append original length (64 bits, big-endian)
+        data += struct.pack('>Q', orig_len_bits)
+        
+        # Step 4: Initialize buffers
+        h0 = 0x67452301
+        h1 = 0xEFCDAB89
+        h2 = 0x98BADCFE
+        h3 = 0x10325476
+        h4 = 0xC3D2E1F0
+        
+        # Step 5: Process each 512-bit block
+        for i in range(0, len(data), 64):
+            chunk = data[i:i+64]
+            words = list(struct.unpack('>16I', chunk))
+            
+            for j in range(16, 80):
+                word = (words[j-3] ^ words[j-8] ^ words[j-14] ^ words[j-16])
+                words.append(self.left_rotate(word, 1))
+            
+            a, b, c, d, e = h0, h1, h2, h3, h4
+            
+            for j in range(80):
+                if 0 <= j <= 19:
+                    f = (b & c) | ((~b) & d)
+                    k = 0x5A827999
+                elif 20 <= j <= 39:
+                    f = b ^ c ^ d
+                    k = 0x6ED9EBA1
+                elif 40 <= j <= 59:
+                    f = (b & c) | (b & d) | (c & d)
+                    k = 0x8F1BBCDC
+                else:
+                    f = b ^ c ^ d
+                    k = 0xCA62C1D6
+                
+                temp = (self.left_rotate(a, 5) + f + e + k + words[j]) & 0xffffffff
+                e = d
+                d = c
+                c = self.left_rotate(b, 30)
+                b = a
+                a = temp
+            
+            h0 = (h0 + a) & 0xffffffff
+            h1 = (h1 + b) & 0xffffffff
+            h2 = (h2 + c) & 0xffffffff
+            h3 = (h3 + d) & 0xffffffff
+            h4 = (h4 + e) & 0xffffffff
+        
+        return '%08x%08x%08x%08x%08x' % (h0, h1, h2, h3, h4)
+
+    def run_sha1(self):
+        """Execute SHA-1 hashing"""
+        text = self.sha1_entry.get()
+        if not text:
+            messagebox.showwarning("Input Error", "Please enter text to hash!")
+            return
+        try:
+            hashed = self.sha1_hash(text)
+            self.sha1_result.config(text=hashed)
+            self.set_status("SHA-1 Hash calculated successfully")
+        except Exception as ex:
+            messagebox.showerror("Error", f"SHA-1 execution failed: {str(ex)}")
+
+    # ==================== FULL MD5 TAB ====================
+
+    def create_full_md5_tab(self):
+        """Create Full MD5 Hash tab"""
+        md5_frame = ttk.Frame(self.notebook, style='Dark.TFrame')
+        self.notebook.add(md5_frame, text='🛡️ Full MD5')
+        
+        # Input frame
+        input_frame = ttk.Frame(md5_frame, style='Card.TFrame')
+        input_frame.pack(fill='x', padx=15, pady=15)
+        
+        ttk.Label(input_frame, text="MD5 Message Digest Algorithm (Full)", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        ttk.Label(input_frame, text="Enter Text to Hash:", style='Info.TLabel').pack(anchor='w', padx=10, pady=(5, 5))
+        
+        input_container = ttk.Frame(input_frame, style='Card.TFrame')
+        input_container.pack(fill='x', padx=10, pady=(0, 10))
+        
+        self.full_md5_entry = tk.Entry(input_container, 
+                                     bg='#0a0e27', fg='#0f0',
+                                     font=('Consolas', 11),
+                                     insertbackground='#0f0',
+                                     relief='flat', width=40)
+        self.full_md5_entry.pack(side='left', padx=(0, 10), pady=5, ipady=5, fill='x', expand=True)
+        
+        ttk.Button(input_container, text="⚡ Calculate Hash",
+                  style='Action.TButton',
+                  command=self.run_full_md5).pack(side='left')
+
+        # Output frame
+        output_frame = ttk.Frame(md5_frame, style='Card.TFrame')
+        output_frame.pack(fill='both', expand=True, padx=15, pady=(0, 15))
+        
+        ttk.Label(output_frame, text="MD5 Digest (128-bit)", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        result_container = ttk.Frame(output_frame, style='Card.TFrame')
+        result_container.pack(fill='x', padx=10, pady=(0, 10))
+        
+        self.full_md5_result = tk.Label(result_container,
+                                      bg='#0a0e27', fg='#00d4ff',
+                                      font=('Consolas', 12, 'bold'),
+                                      anchor='w', padx=10, pady=10)
+        self.full_md5_result.pack(side='left', fill='x', expand=True)
+        
+        ttk.Button(result_container, text="📋",
+                  style='Secondary.TButton',
+                  command=lambda: self.copy_text(self.full_md5_result.cget('text'))).pack(side='left', padx=5)
+
+    def full_md5_hash(self, message):
+        """Implementation of Full MD5 algorithm"""
+        msg_bytes = bytearray(message.encode('utf-8'))
+        orig_len_bits = len(msg_bytes) * 8
+        msg_bytes.append(0x80)
+        while (len(msg_bytes) * 8) % 512 != 448:
+            msg_bytes.append(0x00)
+        
+        msg_bytes += struct.pack('<Q', orig_len_bits)
+        
+        a0, b0, c0, d0 = 0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476
+        
+        s = [7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+             5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+             4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+             6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21]
+        
+        K = [0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
+             0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
+             0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
+             0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
+             0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
+             0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
+             0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
+             0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391]
+        
+        for i in range(0, len(msg_bytes), 64):
+            block = msg_bytes[i:i+64]
+            M = list(struct.unpack('<16I', block))
+            A, B, C, D = a0, b0, c0, d0
+            
+            for j in range(64):
+                if 0 <= j <= 15:
+                    F = (B & C) | ((~B) & D)
+                    g = j
+                elif 16 <= j <= 31:
+                    F = (D & B) | ((~D) & C)
+                    g = (5*j + 1) % 16
+                elif 32 <= j <= 47:
+                    F = B ^ C ^ D
+                    g = (3*j + 5) % 16
+                else:
+                    F = C ^ (B | (~D))
+                    g = (7*j) % 16
+                
+                F = (F + A + K[j] + M[g]) & 0xFFFFFFFF
+                A, D, C, B = D, C, B, (B + self.left_rotate(F, s[j])) & 0xFFFFFFFF
+            
+            a0 = (a0 + A) & 0xFFFFFFFF
+            b0 = (b0 + B) & 0xFFFFFFFF
+            c0 = (c0 + C) & 0xFFFFFFFF
+            d0 = (d0 + D) & 0xFFFFFFFF
+            
+        digest = struct.pack('<4I', a0, b0, c0, d0)
+        return digest.hex()
+
+    def run_full_md5(self):
+        """Execute Full MD5 hashing"""
+        text = self.full_md5_entry.get()
+        if not text:
+            messagebox.showwarning("Input Error", "Please enter text to hash!")
+            return
+        try:
+            hashed = self.full_md5_hash(text)
+            self.full_md5_result.config(text=hashed)
+            self.set_status("Full MD5 Hash calculated successfully")
+        except Exception as ex:
+            messagebox.showerror("Error", f"Full MD5 execution failed: {str(ex)}")
 
     # ==================== UTILITY FUNCTIONS ====================
     
