@@ -4,7 +4,7 @@ Integrates RSA, DES Key Generation, and S-DES Encryption/Decryption
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
+from tkinter import ttk, messagebox, scrolledtext, filedialog
 import random
 import struct
 import math
@@ -130,6 +130,8 @@ class SecurityToolkit:
         self.create_md5_tab()
         self.create_sha1_tab()
         self.create_full_md5_tab()
+        self.create_dss_tab()
+        self.create_hellman_tab()
     
     def create_status_bar(self):
         """Create status bar at bottom"""
@@ -180,7 +182,15 @@ class SecurityToolkit:
         input_frame = ttk.Frame(rsa_frame, style='Card.TFrame')
         input_frame.pack(fill='both', expand=True, padx=15, pady=(0, 15))
         
-        ttk.Label(input_frame, text="Plaintext Message", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        # Message input
+        input_header_frame = ttk.Frame(input_frame, style='Card.TFrame')
+        input_header_frame.pack(fill='x', padx=10, pady=(10, 5))
+        
+        ttk.Label(input_header_frame, text="Plaintext Message", style='Header.TLabel').pack(side='left')
+        
+        ttk.Button(input_header_frame, text="📂 Load File", 
+                  style='Secondary.TButton',
+                  command=lambda: self.load_file_to_widget(self.rsa_plaintext)).pack(side='right')
         
         self.rsa_plaintext = scrolledtext.ScrolledText(input_frame, height=4, width=60,
                                                        bg='#0a0e27', fg='#0f0',
@@ -205,6 +215,10 @@ class SecurityToolkit:
         ttk.Button(cipher_container, text="📋", 
                   style='Secondary.TButton',
                   command=lambda: self.copy_to_clipboard(self.rsa_ciphertext)).pack(side='left', padx=(5, 0))
+
+        ttk.Button(cipher_container, text="💾", 
+                  style='Secondary.TButton',
+                  command=lambda: self.save_text_to_file(self.rsa_ciphertext.get('1.0', 'end-1c'))).pack(side='left', padx=(5, 0))
         
         # Decrypted output
         ttk.Label(input_frame, text="Decrypted Message", style='Header.TLabel').pack(anchor='w', padx=10, pady=(15, 5))
@@ -222,6 +236,10 @@ class SecurityToolkit:
         ttk.Button(decrypt_container, text="📋",
                   style='Secondary.TButton',
                   command=lambda: self.copy_to_clipboard(self.rsa_decrypted)).pack(side='left', padx=(5, 0))
+
+        ttk.Button(decrypt_container, text="💾",
+                  style='Secondary.TButton',
+                  command=lambda: self.save_text_to_file(self.rsa_decrypted.get('1.0', 'end-1c'))).pack(side='left', padx=(5, 0))
         
         # Action buttons
         action_frame = ttk.Frame(input_frame, style='Card.TFrame')
@@ -533,6 +551,10 @@ class SecurityToolkit:
         ttk.Button(result_container, text="📋",
                   style='Secondary.TButton',
                   command=lambda: self.copy_text(self.sdes_cipher_label.cget('text'))).pack(side='left', padx=5)
+
+        ttk.Button(result_container, text="💾",
+                  style='Secondary.TButton',
+                  command=lambda: self.save_text_to_file(self.sdes_cipher_label.cget('text'))).pack(side='left', padx=5)
         
         # Decrypted text
         decrypt_container = ttk.Frame(output_frame, style='Card.TFrame')
@@ -549,6 +571,10 @@ class SecurityToolkit:
         ttk.Button(decrypt_container, text="📋",
                   style='Secondary.TButton',
                   command=lambda: self.copy_text(self.sdes_decrypt_label.cget('text'))).pack(side='left', padx=5)
+
+        ttk.Button(decrypt_container, text="💾",
+                  style='Secondary.TButton',
+                  command=lambda: self.save_text_to_file(self.sdes_decrypt_label.cget('text'))).pack(side='left', padx=5)
         
         # Action buttons
         action_frame = ttk.Frame(output_frame, style='Card.TFrame')
@@ -744,6 +770,10 @@ class SecurityToolkit:
         self.md5_entry.pack(side='left', padx=(0, 10), pady=5, ipady=5, fill='x', expand=True)
         self.md5_entry.insert(0, "security")
         
+        ttk.Button(input_container, text="📂", width=3,
+                  style='Secondary.TButton',
+                  command=lambda: self.load_file_to_widget(self.md5_entry)).pack(side='left', padx=(0, 5))
+        
         ttk.Button(input_container, text="⚡ Run Round 1",
                   style='Action.TButton',
                   command=self.run_md5_round1).pack(side='left')
@@ -889,6 +919,10 @@ class SecurityToolkit:
                                  insertbackground='#0f0',
                                  relief='flat', width=40)
         self.sha1_entry.pack(side='left', padx=(0, 10), pady=5, ipady=5, fill='x', expand=True)
+
+        ttk.Button(input_container, text="📂", width=3,
+                  style='Secondary.TButton',
+                  command=lambda: self.load_file_to_widget(self.sha1_entry)).pack(side='left', padx=(0, 5))
         
         ttk.Button(input_container, text="⚡ Calculate Hash",
                   style='Action.TButton',
@@ -912,6 +946,10 @@ class SecurityToolkit:
         ttk.Button(result_container, text="📋",
                   style='Secondary.TButton',
                   command=lambda: self.copy_text(self.sha1_result.cget('text'))).pack(side='left', padx=5)
+
+        ttk.Button(result_container, text="💾",
+                  style='Secondary.TButton',
+                  command=lambda: self.save_text_to_file(self.sha1_result.cget('text'))).pack(side='left', padx=5)
 
     def left_rotate(self, n, b):
         """Left rotate n by b bits."""
@@ -1019,6 +1057,10 @@ class SecurityToolkit:
                                      insertbackground='#0f0',
                                      relief='flat', width=40)
         self.full_md5_entry.pack(side='left', padx=(0, 10), pady=5, ipady=5, fill='x', expand=True)
+
+        ttk.Button(input_container, text="📂", width=3,
+                  style='Secondary.TButton',
+                  command=lambda: self.load_file_to_widget(self.full_md5_entry)).pack(side='left', padx=(0, 5))
         
         ttk.Button(input_container, text="⚡ Calculate Hash",
                   style='Action.TButton',
@@ -1042,9 +1084,31 @@ class SecurityToolkit:
         ttk.Button(result_container, text="📋",
                   style='Secondary.TButton',
                   command=lambda: self.copy_text(self.full_md5_result.cget('text'))).pack(side='left', padx=5)
+        
+        ttk.Button(result_container, text="💾",
+                  style='Secondary.TButton',
+                  command=lambda: self.save_text_to_file(self.full_md5_result.cget('text'))).pack(side='left', padx=5)
+
+        # Log Notebook (Nested)
+        log_frame = ttk.Frame(md5_frame, style='Card.TFrame')
+        log_frame.pack(fill='both', expand=True, padx=15, pady=(0, 15))
+        
+        ttk.Label(log_frame, text="Detailed Operation Logs (64 Steps)", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        self.md5_log_notebook = ttk.Notebook(log_frame)
+        self.md5_log_notebook.pack(fill='both', expand=True, padx=10, pady=(0, 10))
+        
+        self.md5_round_logs = []
+        for i in range(4):
+            round_frame = ttk.Frame(self.md5_log_notebook, style='Dark.TFrame')
+            self.md5_log_notebook.add(round_frame, text=f'Round {i+1}')
+            
+            log_text = scrolledtext.ScrolledText(round_frame, bg='#0a0e27', fg='#0f0', font=('Consolas', 9), state='disabled', relief='flat')
+            log_text.pack(fill='both', expand=True, padx=5, pady=5)
+            self.md5_round_logs.append(log_text)
 
     def full_md5_hash(self, message):
-        """Implementation of Full MD5 algorithm"""
+        """Implementation of Full MD5 algorithm with logging"""
         msg_bytes = bytearray(message.encode('utf-8'))
         orig_len_bits = len(msg_bytes) * 8
         msg_bytes.append(0x80)
@@ -1069,6 +1133,8 @@ class SecurityToolkit:
              0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
              0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391]
         
+        logs = [[], [], [], []] # 4 Rounds
+        
         for i in range(0, len(msg_bytes), 64):
             block = msg_bytes[i:i+64]
             M = list(struct.unpack('<16I', block))
@@ -1078,42 +1144,392 @@ class SecurityToolkit:
                 if 0 <= j <= 15:
                     F = (B & C) | ((~B) & D)
                     g = j
+                    round_idx = 0
                 elif 16 <= j <= 31:
                     F = (D & B) | ((~D) & C)
                     g = (5*j + 1) % 16
+                    round_idx = 1
                 elif 32 <= j <= 47:
                     F = B ^ C ^ D
                     g = (3*j + 5) % 16
+                    round_idx = 2
                 else:
                     F = C ^ (B | (~D))
                     g = (7*j) % 16
+                    round_idx = 3
+                
+                # Log state before op
+                log_entry = f"Step {j:02d} | M[{g:2d}] | "
                 
                 F = (F + A + K[j] + M[g]) & 0xFFFFFFFF
                 A, D, C, B = D, C, B, (B + self.left_rotate(F, s[j])) & 0xFFFFFFFF
+                
+                # Log state after op
+                log_entry += f"A={A:08x} B={B:08x} C={C:08x} D={D:08x}\n"
+                logs[round_idx].append(log_entry)
             
             a0 = (a0 + A) & 0xFFFFFFFF
             b0 = (b0 + B) & 0xFFFFFFFF
             c0 = (c0 + C) & 0xFFFFFFFF
             d0 = (d0 + D) & 0xFFFFFFFF
             
-        digest = struct.pack('<4I', a0, b0, c0, d0)
-        return digest.hex()
+        digest = struct.pack('<4I', a0, b0, c0, d0).hex()
+        return digest, logs
 
     def run_full_md5(self):
-        """Execute Full MD5 hashing"""
+        """Execute Full MD5 hashing with logs"""
         text = self.full_md5_entry.get()
         if not text:
             messagebox.showwarning("Input Error", "Please enter text to hash!")
             return
         try:
-            hashed = self.full_md5_hash(text)
+            hashed, logs = self.full_md5_hash(text)
             self.full_md5_result.config(text=hashed)
+            
+            # Update Logs
+            for i in range(4):
+                self.md5_round_logs[i].config(state='normal')
+                self.md5_round_logs[i].delete('1.0', 'end')
+                self.md5_round_logs[i].insert('1.0', "".join(logs[i]) if logs[i] else "No data for this round (short message?)")
+                self.md5_round_logs[i].config(state='disabled')
+                
             self.set_status("Full MD5 Hash calculated successfully")
         except Exception as ex:
             messagebox.showerror("Error", f"Full MD5 execution failed: {str(ex)}")
 
+    # ==================== DSS TAB ====================
+    
+    def create_dss_tab(self):
+        """Create Digital Signature Standard (DSS) tab"""
+        dss_frame = ttk.Frame(self.notebook, style='Dark.TFrame')
+        self.notebook.add(dss_frame, text='✍️ DSS')
+        
+        # Parameters frame
+        param_frame = ttk.Frame(dss_frame, style='Card.TFrame')
+        param_frame.pack(fill='x', padx=15, pady=15)
+        
+        ttk.Label(param_frame, text="DSS Parameters (Educational)", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        self.dss_p = 23
+        self.dss_q = 11
+        self.dss_g = 4
+        
+        info = f"Public Parameters:\nPrime Modulus (p) = {self.dss_p}\nPrime Divisor (q) = {self.dss_q}\nGenerator (g) = {self.dss_g}"
+        ttk.Label(param_frame, text=info, style='Info.TLabel', justify='left').pack(anchor='w', padx=10, pady=(0, 10))
+        
+        # Key Generation
+        key_frame = ttk.Frame(dss_frame, style='Card.TFrame')
+        key_frame.pack(fill='x', padx=15, pady=(0, 15))
+        
+        ttk.Label(key_frame, text="Key Generation", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        btn_frame = ttk.Frame(key_frame, style='Dark.TFrame')
+        btn_frame.pack(fill='x', padx=10, pady=5)
+        
+        ttk.Button(btn_frame, text="🔑 Generate Keys", 
+                  style='Action.TButton',
+                  command=self.generate_dss_keys).pack(side='left')
+                  
+        self.dss_keys_label = ttk.Label(key_frame, text="Keys not generated", style='Info.TLabel')
+        self.dss_keys_label.pack(anchor='w', padx=10, pady=(5, 10))
+        
+        # Signing & Verification
+        action_frame = ttk.Frame(dss_frame, style='Card.TFrame')
+        action_frame.pack(fill='both', expand=True, padx=15, pady=(0, 15))
+        
+        ttk.Label(action_frame, text="Sign & Verify", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        # Message input
+        # Message input
+        msg_header = ttk.Frame(action_frame, style='Card.TFrame')
+        msg_header.pack(fill='x', padx=10)
+        
+        ttk.Label(msg_header, text="Message:", style='Info.TLabel').pack(side='left')
+        ttk.Button(msg_header, text="📂 Load File", 
+                  style='Secondary.TButton',
+                  command=lambda: self.load_file_to_widget(self.dss_msg_entry)).pack(side='right')
+
+        self.dss_msg_entry = tk.Entry(action_frame, bg='#0a0e27', fg='#0f0', font=('Consolas', 11), insertbackground='#0f0', relief='flat')
+        self.dss_msg_entry.pack(fill='x', padx=10, pady=5)
+        
+        # Determine Signature
+        sig_btn_frame = ttk.Frame(action_frame, style='Dark.TFrame')
+        sig_btn_frame.pack(fill='x', padx=10, pady=5)
+        
+        ttk.Button(sig_btn_frame, text="✍️ Sign Message", 
+                  style='Action.TButton',
+                  command=self.dss_sign).pack(side='left', padx=(0, 10))
+                  
+        self.dss_sig_label = ttk.Label(action_frame, text="Signature: None", style='Info.TLabel')
+        self.dss_sig_label.pack(side='left', padx=10)
+        
+        ttk.Button(sig_btn_frame, text="💾",
+                  style='Secondary.TButton',
+                  command=lambda: self.save_text_to_file(self.dss_sig_label.cget('text'))).pack(side='left', padx=5)
+        
+        # Verification
+        verify_btn_frame = ttk.Frame(action_frame, style='Dark.TFrame')
+        verify_btn_frame.pack(fill='x', padx=10, pady=5)
+        
+        ttk.Button(verify_btn_frame, text="✓ Verify Signature", 
+                  style='Secondary.TButton',
+                  command=self.dss_verify).pack(side='left', padx=(0, 10))
+                  
+        self.dss_verify_label = ttk.Label(action_frame, text="", style='Info.TLabel')
+        self.dss_verify_label.pack(anchor='w', padx=10, pady=5)
+
+    def simple_hash(self, message):
+        """Simplified hash function for DSS demo"""
+        hash_val = 0
+        for char in message:
+            hash_val += ord(char)
+        return hash_val % self.dss_q
+
+    def generate_dss_keys(self):
+        """Generate DSS keys"""
+        try:
+            # Private key x: random between 1 and q-1
+            self.dss_x = random.randint(1, self.dss_q - 1)
+            # Public key y: g^x mod p
+            self.dss_y = pow(self.dss_g, self.dss_x, self.dss_p)
+            
+            self.dss_keys_label.config(text=f"Private Key (x): {self.dss_x}\nPublic Key (y): {self.dss_y}")
+            self.set_status("DSS Keys Generated")
+        except Exception as ex:
+            messagebox.showerror("Error", f"Key Gen Error: {str(ex)}")
+
+    def dss_sign(self):
+        """Sign message using DSS"""
+        if not hasattr(self, 'dss_x'):
+            messagebox.showwarning("Error", "Generate keys first!")
+            return
+            
+        message = self.dss_msg_entry.get()
+        if not message:
+            messagebox.showwarning("Error", "Enter a message!")
+            return
+            
+        try:
+            h = self.simple_hash(message)
+            
+            # Per-message secret k
+            k = random.randint(1, self.dss_q - 1)
+            
+            # r = (g^k mod p) mod q
+            self.dss_r = pow(self.dss_g, k, self.dss_p) % self.dss_q
+            
+            # s = (k^-1 * (h + x*r)) mod q
+            # Calculate k inverse
+            k_inv = None
+            for i in range(1, self.dss_q):
+                if (k * i) % self.dss_q == 1:
+                    k_inv = i
+                    break
+            
+            if k_inv is None:
+                raise ValueError("Could not find modular inverse for k")
+                
+            self.dss_s = (k_inv * (h + self.dss_x * self.dss_r)) % self.dss_q
+            
+            self.dss_sig_label.config(text=f"Signature (r, s): ({self.dss_r}, {self.dss_s})\n(Message Hash: {h}, k: {k})")
+            self.set_status("Message Signed")
+            
+        except Exception as ex:
+            messagebox.showerror("Error", f"Signing Error: {str(ex)}")
+
+    def dss_verify(self):
+        """Verify DSS signature"""
+        if not hasattr(self, 'dss_r') or not hasattr(self, 'dss_s'):
+            messagebox.showwarning("Error", "Sign a message first!")
+            return
+            
+        message = self.dss_msg_entry.get()
+        
+        try:
+            h = self.simple_hash(message)
+            
+            # w = s^-1 mod q
+            w = None
+            for i in range(1, self.dss_q):
+                if (self.dss_s * i) % self.dss_q == 1:
+                    w = i
+                    break
+            
+            if w is None:
+                self.dss_verify_label.config(text="❌ Invalid: Inverse not found", foreground="#ff6b6b")
+                return
+
+            u1 = (h * w) % self.dss_q
+            u2 = (self.dss_r * w) % self.dss_q
+            
+            v = ((pow(self.dss_g, u1, self.dss_p) * pow(self.dss_y, u2, self.dss_p)) % self.dss_p) % self.dss_q
+            
+            if v == self.dss_r:
+                self.dss_verify_label.config(text=f"✓ Valid Signature (v={v}, r={self.dss_r})", foreground="#0f0")
+            else:
+                self.dss_verify_label.config(text=f"❌ Invalid Signature (v={v}, r={self.dss_r})", foreground="#ff6b6b")
+                
+            self.set_status("Verification Complete")
+            
+        except Exception as ex:
+            messagebox.showerror("Error", f"Verification Error: {str(ex)}")
+
+
+    # ==================== DIFFIE-HELLMAN TAB ====================
+
+    def create_hellman_tab(self):
+        """Create Diffie-Hellman Key Exchange tab"""
+        dh_frame = ttk.Frame(self.notebook, style='Dark.TFrame')
+        self.notebook.add(dh_frame, text='🤝 Diffie-Hellman')
+        
+        # Info frame
+        info_frame = ttk.Frame(dh_frame, style='Card.TFrame')
+        info_frame.pack(fill='x', padx=15, pady=15)
+        
+        ttk.Label(info_frame, text="Diffie-Hellman Key Exchange", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        self.dh_p = 23
+        self.dh_g = 5
+        
+        info = f"Public Parameters:\nPrime (p) = {self.dh_p}\nGenerator (g) = {self.dh_g}"
+        ttk.Label(info_frame, text=info, style='Info.TLabel', justify='left').pack(anchor='w', padx=10, pady=(0, 10))
+        
+        # Private Keys Input
+        input_frame = ttk.Frame(dh_frame, style='Card.TFrame')
+        input_frame.pack(fill='x', padx=15, pady=(0, 15))
+        
+        ttk.Label(input_frame, text="Private Keys", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        # Alice -> Sender
+        sender_frame = ttk.Frame(input_frame, style='Dark.TFrame')
+        sender_frame.pack(fill='x', padx=10, pady=5)
+        ttk.Label(sender_frame, text="Sender Private Key (a):", style='Info.TLabel', width=25).pack(side='left')
+        self.dh_sender_priv = tk.Entry(sender_frame, bg='#0a0e27', fg='#0f0', font=('Consolas', 11), insertbackground='#0f0', width=10)
+        self.dh_sender_priv.pack(side='left', padx=5)
+        self.dh_sender_priv.insert(0, "6")
+        
+        # Bob -> Receiver
+        receiver_frame = ttk.Frame(input_frame, style='Dark.TFrame')
+        receiver_frame.pack(fill='x', padx=10, pady=5)
+        ttk.Label(receiver_frame, text="Receiver Private Key (b):", style='Info.TLabel', width=25).pack(side='left')
+        self.dh_receiver_priv = tk.Entry(receiver_frame, bg='#0a0e27', fg='#0f0', font=('Consolas', 11), insertbackground='#0f0', width=10)
+        self.dh_receiver_priv.pack(side='left', padx=5)
+        self.dh_receiver_priv.insert(0, "15")
+        
+        ttk.Button(input_frame, text="🔄 Exchange Keys", 
+                  style='Action.TButton',
+                  command=self.run_diffie_hellman).pack(anchor='w', padx=10, pady=10)
+                  
+        # Results frame
+        res_frame = ttk.Frame(dh_frame, style='Card.TFrame')
+        res_frame.pack(fill='both', expand=True, padx=15, pady=(0, 15))
+        
+        ttk.Label(res_frame, text="Exchange Process", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
+        
+        self.dh_log = scrolledtext.ScrolledText(res_frame, height=10, 
+                                                bg='#0a0e27', fg='#00d4ff',
+                                                font=('Consolas', 10),
+                                                state='disabled', relief='flat')
+        self.dh_log.pack(fill='both', expand=True, padx=10, pady=10)
+
+    def run_diffie_hellman(self):
+        """Execute Diffie-Hellman Key Exchange"""
+        try:
+            a = int(self.dh_sender_priv.get())
+            b = int(self.dh_receiver_priv.get())
+            
+            log = f"Using Public Parameters: p={self.dh_p}, g={self.dh_g}\n"
+            log += "-" * 50 + "\n"
+            
+            # Calculate Public Keys
+            # A = g^a mod p
+            A = pow(self.dh_g, a, self.dh_p)
+            # B = g^b mod p
+            B = pow(self.dh_g, b, self.dh_p)
+            
+            log += f"Sender (A) computes Public Key A = {self.dh_g}^{a} mod {self.dh_p} = {A}\n"
+            log += f"Receiver (B) computes Public Key B = {self.dh_g}^{b} mod {self.dh_p} = {B}\n"
+            log += "-" * 50 + "\n"
+            log += "Exchanging Public Keys...\n"
+            log += "-" * 50 + "\n"
+            
+            # Calculate Shared Secret
+            # Sender: s = B^a mod p
+            s_sender = pow(B, a, self.dh_p)
+            # Receiver: s = A^b mod p
+            s_receiver = pow(A, b, self.dh_p)
+            
+            log += f"Sender receives B={B}, computes secret:   {B}^{a} mod {self.dh_p} = {s_sender}\n"
+            log += f"Receiver receives A={A}, computes secret: {A}^{b} mod {self.dh_p} = {s_receiver}\n"
+            
+            log += "=" * 50 + "\n"
+            if s_sender == s_receiver:
+                log += f"✓ SUCCESS: Shared Secret Established: {s_sender}\n"
+            else:
+                log += f"❌ FAILURE: Secrets do not match! ({s_sender} vs {s_receiver})\n"
+            
+            self.dh_log.config(state='normal')
+            self.dh_log.delete('1.0', 'end')
+            self.dh_log.insert('1.0', log)
+            self.dh_log.config(state='disabled')
+            
+            self.set_status("Key Exchange Complete")
+            
+        except ValueError:
+            messagebox.showerror("Input Error", "Private keys must be integers!")
+        except Exception as ex:
+            messagebox.showerror("Error", f"Diffie-Hellman failed: {str(ex)}")
+
     # ==================== UTILITY FUNCTIONS ====================
     
+    def save_text_to_file(self, content, default_ext=".txt"):
+        """Save text content to a file"""
+        if not content or content.strip() == "":
+            messagebox.showinfo("No Content", "Nothing to save!")
+            return
+            
+        try:
+            filename = filedialog.asksaveasfilename(
+                title="Save As",
+                defaultextension=default_ext,
+                filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+            )
+            
+            if filename:
+                with open(filename, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                self.set_status(f"Saved to {filename}")
+                
+        except Exception as ex:
+            messagebox.showerror("Error", f"Failed to save file: {str(ex)}")
+
+    def load_file_to_widget(self, widget):
+        """Load text from file into a widget (Entry or Text)"""
+        try:
+            filename = filedialog.askopenfilename(
+                title="Select Text File",
+                filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+            )
+            
+            if filename:
+                with open(filename, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    
+                # Handle different widget types
+                if isinstance(widget, tk.Entry):
+                    widget.delete(0, 'end')
+                    widget.insert(0, content)
+                elif isinstance(widget, tk.Text) or isinstance(widget, scrolledtext.ScrolledText):
+                    widget.config(state='normal')
+                    widget.delete('1.0', 'end')
+                    widget.insert('1.0', content)
+                    # Don't disable here to allow user editing
+                
+                self.set_status(f"Loaded content from {filename}")
+                
+        except Exception as ex:
+            messagebox.showerror("Error", f"Failed to load file: {str(ex)}")
+
     def copy_to_clipboard(self, text_widget):
         """Copy text from a text widget to clipboard"""
         try:
