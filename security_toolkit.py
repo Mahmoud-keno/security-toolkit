@@ -309,13 +309,15 @@ class SecurityToolkit:
         # Configure custom style
         self.setup_styles()
         
-        # Create header
-        self.create_header()
+        # Main container for page switching
+        self.main_container = ttk.Frame(self.root, style='Dark.TFrame')
+        self.main_container.pack(fill='both', expand=True)
         
-        # Create notebook (tabbed interface)
-        self.create_notebook()
+        # Load explanations
+        self.explanations = self.load_explanations()
         
-        # Create status bar
+        # Start with landing page
+        self.create_landing_page()
         self.create_status_bar()
         
     def setup_styles(self):
@@ -328,7 +330,7 @@ class SecurityToolkit:
         style.configure('TNotebook.Tab', 
                        background='#16213e', 
                        foreground='#00d4ff',
-                       padding=[20, 10],
+                       padding=[18, 5],
                        font=('Consolas', 10, 'bold'))
         style.map('TNotebook.Tab',
                  background=[('selected', '#1a1a2e')],
@@ -361,35 +363,165 @@ class SecurityToolkit:
         style.map('Action.TButton',
                  background=[('active', '#00ff00'), ('pressed', '#00cc00')])
         
-        style.configure('Secondary.TButton',
-                       background='#00d4ff',
-                       foreground='#000',
-                       font=('Consolas', 9),
-                       padding=[8, 4])
         style.map('Secondary.TButton',
                  background=[('active', '#00e5ff'), ('pressed', '#00b0cc')])
-    
-    def create_header(self):
-        """Create application header"""
-        header_frame = ttk.Frame(self.root, style='Dark.TFrame', height=80)
+        
+    def load_explanations(self):
+        """Load and parse explanation files from Summaries folder"""
+        explanations = {}
+        # Assuming 'Summaries' is a sibling directory to the script's directory
+        import os
+        summary_dir = os.path.join(os.path.dirname(__file__), 'Summaries')
+        
+        if not os.path.exists(summary_dir):
+            print(f"Summaries directory not found: {summary_dir}")
+            return {}
+            
+        try:
+            # Parse File 1 (SDES, DES)
+            file1_path = os.path.join(summary_dir, '1.txt')
+            if os.path.exists(file1_path):
+                with open(file1_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    parts = content.split('2. DES')
+                    if len(parts) > 0: explanations['SDES'] = parts[0].strip()
+                    if len(parts) > 1: explanations['DES'] = '2. DES' + parts[1].strip()
+                
+            # Parse File 2 (RSA, Diffie-Hellman)
+            file2_path = os.path.join(summary_dir, '2.txt')
+            if os.path.exists(file2_path):
+                with open(file2_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    parts = content.split('4. Diffie-Hellman')
+                    if len(parts) > 0: explanations['RSA'] = parts[0].strip()
+                    if len(parts) > 1: explanations['Diffie-Hellman'] = '4. Diffie-Hellman' + parts[1].strip()
+                
+            # Parse File 3 (MD5, SHA-1, DSS)
+            file3_path = os.path.join(summary_dir, '3.txt')
+            if os.path.exists(file3_path):
+                with open(file3_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    parts = content.split('6. SHA-1')
+                    if len(parts) > 0: explanations['MD5'] = parts[0].strip()
+                    remain = parts[1] if len(parts) > 1 else ""
+                    
+                    parts2 = remain.split('7. DSS')
+                    if len(parts2) > 0: explanations['SHA-1'] = '6. SHA-1' + parts2[0].strip()
+                    if len(parts2) > 1: explanations['DSS'] = '7. DSS' + parts2[1].strip()
+                
+        except Exception as e:
+            print(f"Error loading summaries: {e}")
+            
+        return explanations
+
+    def create_landing_page(self):
+        """Create the main landing page"""
+        for widget in self.main_container.winfo_children():
+            widget.destroy()
+            
+        landing_frame = ttk.Frame(self.main_container, style='Dark.TFrame')
+        landing_frame.pack(fill='both', expand=True)
+        
+        # Center content
+        center_frame = ttk.Frame(landing_frame, style='Dark.TFrame')
+        center_frame.place(relx=0.5, rely=0.5, anchor='center')
+        
+        # Title
+        tk.Label(center_frame, text="🔐 SECURITY TOOLKIT", 
+                font=('Consolas', 32, 'bold'),
+                bg='#0a0e27', fg='#00ff00').pack(pady=20)
+                
+        tk.Label(center_frame, text="Select operation mode:",
+                font=('Consolas', 14),
+                bg='#0a0e27', fg='#888').pack(pady=(0, 30))
+                
+        # Big Buttons
+        btn_frame = ttk.Frame(center_frame, style='Dark.TFrame')
+        btn_frame.pack()
+        
+        tk.Button(btn_frame, text="🛠️ CODES\n(Run Algorithms)", 
+                 font=('Consolas', 16, 'bold'),
+                 bg='#16213e', fg='#00d4ff',
+                 activebackground='#00d4ff', activeforeground='#000',
+                 width=20, height=5, bd=0, cursor='hand2',
+                 command=self.show_codes_view).pack(side='left', padx=20)
+                 
+        tk.Button(btn_frame, text="📚 EXPLANATION\n(Learn Concepts)", 
+                 font=('Consolas', 16, 'bold'),
+                 bg='#16213e', fg='#ff6b6b',
+                 activebackground='#ff6b6b', activeforeground='#000',
+                 width=20, height=5, bd=0, cursor='hand2',
+                 command=self.show_explanation_view).pack(side='left', padx=20)
+
+    def show_codes_view(self):
+        """Switch to Codes view"""
+        for widget in self.main_container.winfo_children():
+            widget.destroy()
+            
+        self.create_header(self.main_container, "Codes")
+        self.create_notebook(self.main_container)
+        
+    def show_explanation_view(self):
+        """Switch to Explanation view"""
+        for widget in self.main_container.winfo_children():
+            widget.destroy()
+            
+        self.create_header(self.main_container, "Explanation")
+        
+        # Explanation Notebook
+        exp_notebook = ttk.Notebook(self.main_container)
+        exp_notebook.pack(fill='both', expand=True, padx=10, pady=(0, 10))
+        
+        # Map tabs to keys
+        algo_map = {
+            'RSA': 'RSA',
+            'DES / Full DES': 'DES',
+            'S-DES': 'SDES',
+            'MD5 / Full MD5': 'MD5',
+            'SHA-1 / SHA Family': 'SHA-1',
+            'DSS': 'DSS',
+            'Diffie-Hellman': 'Diffie-Hellman'
+        }
+        
+        for name, key in algo_map.items():
+            frame = ttk.Frame(exp_notebook, style='Dark.TFrame')
+            exp_notebook.add(frame, text=name)
+            
+            text_area = scrolledtext.ScrolledText(frame, bg='#0a0e27', fg='#fff', 
+                                                font=('Consolas', 11), padx=20, pady=20)
+            text_area.pack(fill='both', expand=True, padx=5, pady=5)
+            
+            content = self.explanations.get(key, "Explanation not found.")
+            text_area.insert('1.0', content)
+            text_area.config(state='disabled')
+            
+    def create_header(self, parent, view_name):
+        """Create application header with back button"""
+        header_frame = ttk.Frame(parent, style='Dark.TFrame', height=80)
         header_frame.pack(fill='x', padx=10, pady=10)
-        header_frame.pack_propagate(False)
         
-        title = ttk.Label(header_frame, 
-                         text="🔐 SECURITY TOOLKIT",
+        # Back Button
+        ttk.Button(header_frame, text="⬅ Back to Menu", style='Secondary.TButton',
+                   command=self.create_landing_page).pack(side='left', anchor='nw')
+        
+        title_container = ttk.Frame(header_frame, style='Dark.TFrame')
+        title_container.pack(side='top', fill='x')
+        
+        title = ttk.Label(title_container, 
+                         text=f"🔐 SECURITY TOOLKIT - {view_name}",
                          style='Title.TLabel')
-        title.pack(pady=15)
+        title.pack(pady=(0, 5))
         
-        subtitle = tk.Label(header_frame,
+        subtitle = tk.Label(title_container,
                            text="RSA • DES • S-DES Cryptographic Algorithms",
                            bg='#0a0e27',
                            fg='#888',
                            font=('Consolas', 9))
         subtitle.pack()
     
-    def create_notebook(self):
+    def create_notebook(self, parent):
         """Create tabbed interface"""
-        self.notebook = ttk.Notebook(self.root)
+        self.notebook = ttk.Notebook(parent)
         self.notebook.pack(fill='both', expand=True, padx=10, pady=(0, 10))
         
         # Create tabs
@@ -411,9 +543,9 @@ class SecurityToolkit:
                              textvariable=self.status_var,
                              bg='#16213e',
                              fg='#0f0',
-                             font=('Consolas', 9),
+                             font=('Consolas', 10),
                              anchor='w',
-                             padx=10,
+                             padx=18,
                              pady=5)
         status_bar.pack(side='bottom', fill='x')
     
@@ -663,11 +795,11 @@ class SecurityToolkit:
         self.des_key_entry.pack(side='left', padx=(0, 10), pady=5, ipady=5)
         self.des_key_entry.insert(0, "133457799BBCDFF1")
         
-        ttk.Button(key_input_frame, text="�", width=3,
+        ttk.Button(key_input_frame, text="📂", width=3,
                    style='Secondary.TButton',
                    command=lambda: self.load_file_to_widget(self.des_key_entry)).pack(side='left', padx=(0, 5))
 
-        ttk.Button(key_input_frame, text="�🔑 Generate Keys",
+        ttk.Button(key_input_frame, text="🔑 Generate Keys",
                   style='Action.TButton',
                   command=self.generate_des_keys).pack(side='left')
         
@@ -785,43 +917,62 @@ class SecurityToolkit:
         ttk.Label(input_frame, text="Simplified DES (S-DES)", style='Header.TLabel').pack(anchor='w', padx=10, pady=(10, 5))
         
         # Key input
-        ttk.Label(input_frame, text="10-bit Key:", style='Info.TLabel').pack(anchor='w', padx=10, pady=(10, 2))
-        self.sdes_key_entry = tk.Entry(input_frame,
+        key_container = ttk.Frame(input_frame, style='Card.TFrame')
+        key_container.pack(fill='x', padx=10, pady=(10, 5))
+        
+        ttk.Label(key_container, text="10-bit Key:", style='Info.TLabel').pack(anchor='w')
+        
+        key_row = ttk.Frame(key_container, style='Card.TFrame')
+        key_row.pack(fill='x', pady=(5, 0))
+        
+        self.sdes_key_entry = tk.Entry(key_row,
                                        bg='#0a0e27', fg='#0f0',
                                        font=('Consolas', 11),
                                        insertbackground='#0f0',
                                        relief='flat', width=30)
-        self.sdes_key_entry.pack(side='left', padx=(0, 5), pady=(0, 5), ipady=3)
+        self.sdes_key_entry.pack(side='left', padx=(0, 5), ipady=3)
         self.sdes_key_entry.insert(0, "1010000010")
         
-        ttk.Button(input_frame, text="📂", width=3, style='Secondary.TButton',
-                   command=lambda: self.load_file_to_widget(self.sdes_key_entry)).pack(anchor='w', padx=10, pady=(0, 5))
+        ttk.Button(key_row, text="📂", width=3, style='Secondary.TButton',
+                   command=lambda: self.load_file_to_widget(self.sdes_key_entry)).pack(side='left', padx=5)
+
+        ttk.Button(key_row, text="🔑 Generate Subkeys",
+                   style='Action.TButton',
+                   command=self.sdes_generate_keys).pack(side='left', padx=5)
         
         # Plaintext input
-        ttk.Label(input_frame, text="8-bit Plaintext:", style='Info.TLabel').pack(anchor='w', padx=10, pady=(10, 2))
-        self.sdes_plain_entry = tk.Entry(input_frame,
+        plain_container = ttk.Frame(input_frame, style='Card.TFrame')
+        plain_container.pack(fill='x', padx=10, pady=(10, 5))
+        
+        ttk.Label(plain_container, text="8-bit Plaintext:", style='Info.TLabel').pack(anchor='w')
+        
+        plain_row = ttk.Frame(plain_container, style='Card.TFrame')
+        plain_row.pack(fill='x', pady=(5, 0))
+        
+        self.sdes_plain_entry = tk.Entry(plain_row,
                                          bg='#0a0e27', fg='#0f0',
                                          font=('Consolas', 11),
                                          insertbackground='#0f0',
                                          relief='flat', width=30)
-        self.sdes_plain_entry.pack(side='left', padx=(0, 5), pady=(0, 10), ipady=3)
+        self.sdes_plain_entry.pack(side='left', padx=(0, 5), ipady=3)
         self.sdes_plain_entry.insert(0, "10100010")
         
-        ttk.Button(input_frame, text="📂", width=3, style='Secondary.TButton',
-                   command=lambda: self.load_file_to_widget(self.sdes_plain_entry)).pack(anchor='w', padx=10, pady=(0, 10))
+        ttk.Button(plain_row, text="📂", width=3, style='Secondary.TButton',
+                   command=lambda: self.load_file_to_widget(self.sdes_plain_entry)).pack(side='left', padx=5)
         
         # Generated keys display
-        ttk.Label(input_frame, text="Generated Subkeys:", style='Info.TLabel').pack(anchor='w', padx=10, pady=(5, 2))
-        self.sdes_subkeys = tk.Text(input_frame, height=2, width=40,
+        subkeys_container = ttk.Frame(input_frame, style='Card.TFrame')
+        subkeys_container.pack(fill='x', padx=10, pady=(10, 5))
+        
+        ttk.Label(subkeys_container, text="Generated Subkeys:", style='Info.TLabel').pack(anchor='w')
+        self.sdes_subkeys = tk.Text(subkeys_container, height=2, width=40,
                                     bg='#0a0e27', fg='#00d4ff',
                                     font=('Consolas', 9),
                                     relief='flat', padx=5, pady=5,
                                     state='disabled')
-        self.sdes_subkeys.pack(anchor='w', padx=10, pady=(0, 10))
+        self.sdes_subkeys.pack(anchor='w', pady=(5, 10))
         
-        ttk.Button(input_frame, text="🔑 Generate Subkeys",
-                  style='Secondary.TButton',
-                  command=self.sdes_generate_keys).pack(anchor='w', padx=10, pady=(0, 10))
+
         
         # Output frame
         output_frame = ttk.Frame(sdes_frame, style='Card.TFrame')
