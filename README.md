@@ -2,48 +2,53 @@
 
 A professional, comprehensive GUI application for demonstrating and performing various cryptographic operations. Built with Python and Tkinter, featuring a modern dark-themed interface.
 
-![Python](https://img.shields.io/badge/Python-3.x-blue.svg) ![Tkinter](https://img.shields.io/badge/GUI-Tkinter-green.svg) ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/Python-3.x-blue.svg) ![Tkinter](https://img.shields.io/badge/GUI-Tkinter-green.svg) ![Pillow](https://img.shields.io/badge/Img-Pillow-yellow.svg) ![License](https://img.shields.io/badge/License-MIT-orange.svg)
 
 ## 📖 Overview
 
-**Security Toolkit** is an all-in-one cryptographic suite designed for educational purposes and practical use. It enables users to visualize and execute complex algorithms involved in encryption, decryption, hashing, and key exchange. The application features a clean, tabbed interface with a "Hacker/Cyberpunk" aesthetic (Dark Blue/Green) for an immersive experience.
+**Security Toolkit** is an all-in-one cryptographic suite designed for both **practical use** ("Codes") and **education** ("Explanation").
+
+Upon launching, users are greeted with a **Landing Page** to choose their mode:
+1.  **🛠️ Codes**: Visualize and execute complexity algorithms (Encryption, Decryption, Hashing).
+2.  **📚 Explanation**: Learn the concepts behind these algorithms with detailed text summaries and **schematic diagrams**.
+
+The application features a clean, "hacker/cyberpunk" aesthetic (Dark Blue/Neon Green) and a highly responsive, compact interface.
 
 ## ✨ Features
+
+### 📚 Explanation Mode (NEW!)
+*   **Visual Learning**: High-quality schematic diagrams for every algorithm (RSA, DES, S-DES, MD5, SHA-1, DSS, Diffie-Hellman).
+*   **Split View Layout**: Explanations on the left, diagrams on the right for easy reading.
+*   **Comprehensive Summaries**: Detailed text breaking down the history and mechanics of each method.
 
 ### 🔑 Public Key Cryptography
 *   **RSA Encryption System**:
     *   Automated Prime & Key Generation (Public/Private keys).
     *   Encrypt and Decrypt text messages.
-    *   Support for file input and output.
 *   **Diffie-Hellman Key Exchange**:
     *   Simulate secure key exchange between two parties (Alice & Bob).
-    *   Visualize the generation of public keys and the shared secret.
+    *   Visual diagram of the exchange process.
 *   **DSS (Digital Signature Standard)**:
     *   Algorithm parameter visualization (p, q, g).
-    *   Sign messages to create digital signatures.
-    *   Verify signatures to ensure authenticity.
+    *   Sign and Verify messages to ensure authenticity.
 
 ### 🔒 Symmetric Key Cryptography
 *   **DES (Data Encryption Standard)**:
-    *   **Key Generator**: Visualizes the generation of 16 round keys from a 64-bit hexadecimal master key.
-    *   Detailed breakdown of shifts and permutations (PC-1, PC-2).
+    *   **Key Generator**: Visualizes generation of 16 round keys from 64-bit hex key.
+    *   Attributes with **visual icons** (📂, 🔑) for better UX.
 *   **S-DES (Simplified DES)**:
-    *   Educational 8-bit block cipher implementation.
-    *   10-bit Key input with automatic subkey generation (K1, K2).
-    *   Full encryption and decryption pipeline.
+    *   Educational 8-bit block cipher.
+    *   **Optimized Layout**: Logical flow with Key Generation side-by-side with Subkeys.
+    *   Full encryption/decryption pipeline.
 
 ### 🛡️ Hashing Algorithms
-*   **MD5 (Message Digest Algorithm 5)**:
-    *   **Round 1 Visualizer**: Step-by-step log of the first 16 operations of the MD5 first round.
-    *   **Full MD5**: Calculate 128-bit hash digests for any text or file.
-*   **SHA-1 (Secure Hash Algorithm 1)**:
-    *   Generate standard 160-bit hash digests.
-    *   Secure and fast implementation.
+*   **MD5 & Full MD5**: Step-by-step round visualization and full 128-bit digest calculation.
+*   **SHA-1 & SHA Family**: Generate standard 160-bit hash digests.
 
 ### ⚙️ Utility Features
-*   **File Operations**: Load text files (`.txt`) directly into input fields and save results to files.
-*   **Clipboard Integration**: One-click buttons to copy results.
-*   **Responsive GUI**: Modern, dark-themed interface built with `ttk` styling.
+*   **File Operations**: Load `.txt` files directly into inputs and save results to disk.
+*   **Clipboard**: One-click copy buttons (📋).
+*   **Compact UI**: "Minimized" padding for a sleek, information-dense display.
 
 ---
 
@@ -51,86 +56,56 @@ A professional, comprehensive GUI application for demonstrating and performing v
 
 ### Prerequisites
 
-*   **Python 3.6+**: Ensure Python is installed on your system.
-    *   [Download Python](https://www.python.org/downloads/)
-
-#### 🖥️ How to Verify if Tkinter is Installed
-
-Run this command in your terminal to check if Tkinter is ready:
-```bash
-python -m tkinter
-```
-*   **Success**: A small window titled "Tk Interface" appears.
-*   **Failure**: You see an error like `No module named tkinter`.
-
-#### 🛠️ How to Install Tkinter
-
-**For Windows Users:**
-If the verification failed, Tkinter wasn't selected during Python installation. Here is how to fix it:
-1.  Go to **Windows Settings** -> **Apps** -> **Installed Apps**.
-2.  Find your **Python** version (e.g., "Python 3.x.x").
-3.  Click the "..." menu or "Modify" button.
-4.  Select **Modify**.
-5.  On the "Optional Features" screen, ensure **"tcl/tk and IDLE"** is CHECKED.
-6.  Click **Next** and then **Install** to update your Python version.
-
-**For Linux Users:**
-*   **Ubuntu / Debian**:
+*   **Python 3.6+**: [Download Python](https://www.python.org/downloads/)
+*   **Pillow (PIL)**: Required for handling images and diagrams.
     ```bash
-    sudo apt-get update
-    sudo apt-get install python3-tk
+    pip install pillow
     ```
-*   **Fedora**:
-    ```bash
-    sudo dnf install python3-tkinter
-    ```
-*   **macOS**: Installed by default. If missing, reinstall Python from [python.org](https://www.python.org/).
 
 ### Installation
 
-1.  **Clone the repository** (or download the source code):
+1.  **Clone the repository** (or download source):
     ```bash
     git clone https://github.com/Mahmoud-keno/security-toolkit.git
     cd security-toolkit
     ```
 
-2.  **No external dependencies required**: The project uses only standard Python libraries (`tkinter`, `random`, `struct`, `math`).
+2.  **Install Dependencies**:
+    ```bash
+    pip install pillow
+    ```
 
 ### 🏃 How to Run
 
-1.  Open your terminal or command prompt.
-2.  Navigate to the project directory.
-3.  Run the application using Python:
-
+1.  Navigate to the project directory.
+2.  Run the application:
     ```bash
     python security_toolkit.py
     ```
-
-4.  The GUI window should appear immediately.
+3.  Choose **Codes** to run algorithms or **Explanation** to learn about them.
 
 ---
 
 ## 🖥️ Usage Guide
 
-1.  **Navigation**: Use the tabs at the top (RSA, DES, S-DES, etc.) to switch between algorithms.
-2.  **Input**:
-    *   **Text**: Type directly into the input fields.
-    *   **Files**: Click the **📂 Load File** button to read text from a local `.txt` file.
-3.  **Action**: Click the main action buttons (e.g., **Key Generation**, **Encrypt**, **Run Round 1**) to execute the algorithm.
-4.  **Output**:
-    *   Results are shown in the output text areas or logs.
-    *   **Copy**: Click the **📋** button to copy to clipboard.
-    *   **Save**: Click the **💾** button to save the result to a text file.
+1.  **Landing Page**: Select your mode.
+2.  **Codes Mode**:
+    *   **Tabs**: Switch between algorithms (RSA, DES, etc.).
+    *   **Input**: Type text or use **📂 Load File**.
+    *   **Action**: Click Green/Blue action buttons (e.g., **Encrypt**, **Generate Keys**).
+    *   **Output**: Copy (📋) or Save (💾) your results.
+3.  **Explanation Mode**:
+    *   Read detailed breakdowns of each algorithm.
+    *   View accompanying flowcharts and diagrams on the right panel.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1.  Fork the project
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+Contributions are welcome!
+1.  Fork the project.
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes.
+4.  Push to the branch.
+5.  Open a Pull Request.
 
 ## 📄 License
 

@@ -483,17 +483,70 @@ class SecurityToolkit:
             'Diffie-Hellman': 'Diffie-Hellman'
         }
         
+        # Keep references to images to prevent GC
+        self.msg_images = []
+        
+        import os
+        img_dir = os.path.join(os.path.dirname(__file__), 'Summaries', 'images')
+        
+        img_map = {
+            'RSA': 'rsa.png',
+            'DES': 'des.png',
+            'SDES': 'sdes.png',
+            'MD5': 'md5.png',
+            'SHA-1': 'sha1.png',
+            'Diffie-Hellman': 'dh.png',
+            'DSS': 'dss.png'
+        }
+        
         for name, key in algo_map.items():
-            frame = ttk.Frame(exp_notebook, style='Dark.TFrame')
-            exp_notebook.add(frame, text=name)
+            tab_frame = ttk.Frame(exp_notebook, style='Dark.TFrame')
+            exp_notebook.add(tab_frame, text=name)
             
-            text_area = scrolledtext.ScrolledText(frame, bg='#0a0e27', fg='#fff', 
-                                                font=('Consolas', 11), padx=20, pady=20)
-            text_area.pack(fill='both', expand=True, padx=5, pady=5)
+            # Use PanedWindow or just frames side-by-side
+            # Left: Text, Right: Image
+            
+            content_frame = ttk.Frame(tab_frame, style='Dark.TFrame')
+            content_frame.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            # Text area (Left)
+            text_area = scrolledtext.ScrolledText(content_frame, bg='#0a0e27', fg='#fff', 
+                                                font=('Consolas', 11), padx=20, pady=20, wrap='word')
+            text_area.pack(side='left', fill='both', expand=True)
             
             content = self.explanations.get(key, "Explanation not found.")
-            text_area.insert('1.0', content)
+            text_area.insert('end', content)
             text_area.config(state='disabled')
+            
+            # Image area (Right)
+            if key in img_map:
+                img_path = os.path.join(img_dir, img_map[key])
+                if os.path.exists(img_path):
+                    try:
+                        from PIL import Image, ImageTk
+                        
+                        pil_img = Image.open(img_path)
+                        
+                        # Resize for side panel (width ~400px)
+                        orig_w, orig_h = pil_img.size
+                        target_w = 400
+                        target_h = int(orig_h * (target_w / orig_w))
+                        
+                        # Limit height as well if too tall
+                        if target_h > 500:
+                            target_h = 500
+                            target_w = int(orig_w * (target_h / orig_h))
+                        
+                        pil_img = pil_img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+                        
+                        tk_img = ImageTk.PhotoImage(pil_img)
+                        self.msg_images.append(tk_img)
+                        
+                        img_label = ttk.Label(content_frame, image=tk_img, background='#0a0e27')
+                        img_label.pack(side='right', anchor='n', padx=(10, 0))
+                        
+                    except Exception as e:
+                        print(f"Error loading image {img_path}: {e}")
             
     def create_header(self, parent, view_name):
         """Create application header with back button"""
@@ -936,9 +989,7 @@ class SecurityToolkit:
         ttk.Button(key_row, text="📂", width=3, style='Secondary.TButton',
                    command=lambda: self.load_file_to_widget(self.sdes_key_entry)).pack(side='left', padx=5)
 
-        ttk.Button(key_row, text="🔑 Generate Subkeys",
-                   style='Action.TButton',
-                   command=self.sdes_generate_keys).pack(side='left', padx=5)
+
         
         # Plaintext input
         plain_container = ttk.Frame(input_frame, style='Card.TFrame')
@@ -965,12 +1016,20 @@ class SecurityToolkit:
         subkeys_container.pack(fill='x', padx=10, pady=(10, 5))
         
         ttk.Label(subkeys_container, text="Generated Subkeys:", style='Info.TLabel').pack(anchor='w')
-        self.sdes_subkeys = tk.Text(subkeys_container, height=2, width=40,
+        
+        subkeys_row = ttk.Frame(subkeys_container, style='Card.TFrame')
+        subkeys_row.pack(fill='x', pady=(5, 10))
+        
+        self.sdes_subkeys = tk.Text(subkeys_row, height=2, width=40,
                                     bg='#0a0e27', fg='#00d4ff',
                                     font=('Consolas', 9),
                                     relief='flat', padx=5, pady=5,
                                     state='disabled')
-        self.sdes_subkeys.pack(anchor='w', pady=(5, 10))
+        self.sdes_subkeys.pack(side='left', padx=(0, 10))
+        
+        ttk.Button(subkeys_row, text="🔑 Generate Subkeys",
+                   style='Action.TButton',
+                   command=self.sdes_generate_keys).pack(side='left')
         
 
         
