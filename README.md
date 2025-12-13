@@ -53,8 +53,38 @@ A professional, comprehensive GUI application for demonstrating and performing v
 
 *   **Python 3.6+**: Ensure Python is installed on your system.
     *   [Download Python](https://www.python.org/downloads/)
-*   **Tkinter**: Usually comes pre-installed with Python.
-    *   *Linux users might need:* `sudo apt-get install python3-tk`
+
+#### 🖥️ How to Verify if Tkinter is Installed
+
+Run this command in your terminal to check if Tkinter is ready:
+```bash
+python -m tkinter
+```
+*   **Success**: A small window titled "Tk Interface" appears.
+*   **Failure**: You see an error like `No module named tkinter`.
+
+#### 🛠️ How to Install Tkinter
+
+**For Windows Users:**
+If the verification failed, Tkinter wasn't selected during Python installation. Here is how to fix it:
+1.  Go to **Windows Settings** -> **Apps** -> **Installed Apps**.
+2.  Find your **Python** version (e.g., "Python 3.x.x").
+3.  Click the "..." menu or "Modify" button.
+4.  Select **Modify**.
+5.  On the "Optional Features" screen, ensure **"tcl/tk and IDLE"** is CHECKED.
+6.  Click **Next** and then **Install** to update your Python version.
+
+**For Linux Users:**
+*   **Ubuntu / Debian**:
+    ```bash
+    sudo apt-get update
+    sudo apt-get install python3-tk
+    ```
+*   **Fedora**:
+    ```bash
+    sudo dnf install python3-tkinter
+    ```
+*   **macOS**: Installed by default. If missing, reinstall Python from [python.org](https://www.python.org/).
 
 ### Installation
 
