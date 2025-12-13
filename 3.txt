@@ -1,0 +1,255 @@
+
+5. MD5 (Message Digest Algorithm 5)
+
+Reference: RFC 1321 (April 1992) by Ronald Rivest
+
+Design Philosophy: "MD" series evolution
+
+* MD2 (1989): Broken
+* MD4 (1990): Fast but weak
+* MD5 (1991): Stronger, but still broken
+
+Technical Specifications:
+
+* Output: 128 bits (32 hex characters)
+* Block Size: 512 bits
+* Word Size: 32 bits
+* Rounds: 4 rounds × 16 operations = 64 steps
+* Endianness: Little-endian
+
+Algorithm Details:
+
+Step 1: Padding (Critical for Security)
+
+Original Message → Append 1 bit → Append 0 bits → Append 64-bit length
+
+Conditions:
+
+1. Message length after padding ≡ 448 mod 512
+2. Length encoded as 64-bit little-endian integer
+
+Step 2: Initialize Constants
+
+Initial Hash Values (IVs):
+A = 0x67452301
+B = 0xEFCDAB89
+C = 0x98BADCFE
+D = 0x10325476
+
+Round Constants:
+Derived from sine function
+T[i] = int(2³² × |sin(i+1)|) for i = 0..63
+
+Step 3: 4 Rounds, 16 Operations Each
+
+Round 1:
+F(X,Y,Z) = (X AND Y) OR (NOT X AND Z)
+
+Round 2:
+G(X,Y,Z) = (X AND Z) OR (Y AND NOT Z)
+
+Round 3:
+H(X,Y,Z) = X XOR Y XOR Z
+
+Round 4:
+I(X,Y,Z) = Y XOR (X OR NOT Z)
+
+Step 4: Merkle-Damgård Construction
+
+Message → Padding → 512-bit blocks → Compression Function → 128-bit hash
+
+Strengths (Why It Was Popular):
+
+1. Fast: Optimized for 32-bit processors
+2. Simple: Easy to implement
+3. Initially collision resistant
+4. Widely adopted for checksums and integrity verification
+
+The Fall of MD5 – Timeline of Attacks:
+
+1993: First weaknesses (pseudo-collisions)
+1996: First theoretical collision
+2004: First practical collision (Wang et al.)
+
+* Complexity: about 2⁴⁰ operations
+* Based on differential cryptanalysis
+
+2005: Rogue CA certificates created
+2008: MD5 officially considered broken
+2012: Flame malware forged Windows certificates
+2013: RFC 6151 declares MD5 obsolete
+
+Specific Attacks:
+
+Collision Attacks:
+Find M1 ≠ M2 such that MD5(M1) = MD5(M2)
+Current cost: approximately 2¹⁶ operations on GPUs
+
+Preimage Attacks:
+Given hash H, find message M such that MD5(M) = H
+Still computationally infeasible (theoretical 2¹²³.4)
+
+Length Extension Attacks:
+Given MD5(M) and length(M), attacker can compute
+MD5(M || padding || X) without knowing M
+
+Practical Impact of Attacks:
+
+1. Forged digital certificates
+2. Fake file integrity checks
+3. Weak password storage if unsalted
+4. HMAC-MD5 still secure due to different construction
+
+Why MD5 Is Still Used:
+
+1. Legacy systems
+2. Non-security checksums
+3. High performance
+4. HMAC-MD5 remains safe
+
+Educational Value:
+
+1. Explains Merkle-Damgård construction
+2. Demonstrates cryptanalysis evolution
+3. Shows importance of secure hash design
+4. Warning against deprecated algorithms
+
+Current Recommendations:
+Never use for security
+Legacy only for non-security purposes
+Replace with SHA-256 or SHA-3
+
+---
+
+6. SHA-1 (Secure Hash Algorithm 1)
+
+Reference: FIPS PUB 180-4, NIST Standard (1995–2011)
+
+Evolution from MD5:
+
+* Larger hash: 160 bits
+* More rounds: 80 operations
+* Better constants
+* Improved message schedule
+
+Technical Specifications:
+
+* Output: 160 bits (40 hex characters)
+* Block Size: 512 bits
+* Word Size: 32 bits
+* Rounds: 80 steps
+* Endianness: Big-endian
+
+Algorithm Improvements over MD5:
+
+Constants derived from square roots:
+K1 = 0x5A827999
+K2 = 0x6ED9EBA1
+K3 = 0x8F1BBCDC
+K4 = 0xCA62C1D6
+
+Round Functions:
+Round 1: (B AND C) OR (NOT B AND D)
+Round 2: B XOR C XOR D
+Round 3: (B AND C) OR (B AND D) OR (C AND D)
+Round 4: B XOR C XOR D
+
+Message Schedule Improvement:
+W[t] = (W[t-3] XOR W[t-8] XOR W[t-14] XOR W[t-16]) left-rotate 1
+
+SHA-1 vs MD5 Summary:
+SHA-1 provides longer hash and higher security but slower speed
+
+The SHAttered Attack (2017):
+
+* First real SHA-1 collision
+* Two PDFs with identical hash
+* Cost: ~$110,000 cloud computing
+* Complexity: ~2⁶³ operations
+
+Impact:
+
+1. Git migration to SHA-256
+2. Certificate authorities banned SHA-1
+3. Document signatures untrusted
+
+Current Status:
+SHA-1 fully deprecated
+Only allowed in HMAC-SHA1
+Must migrate to SHA-256, SHA-3, or BLAKE2
+
+---
+
+7. DSS (Digital Signature Standard)
+
+Reference: FIPS PUB 186-4, NIST Standard
+
+Historical Context:
+1991: DSA proposed
+1994: Adopted as DSS
+Multiple updates until 186-4
+
+Mathematical Basis:
+Discrete Logarithm Problem
+
+Domain Parameters:
+p: large prime
+q: prime divisor of p-1
+g: generator
+
+Key Generation:
+Private key: x
+Public key: y = g^x mod p
+
+Signature Generation:
+
+1. Generate random k
+2. r = (g^k mod p) mod q
+3. s = k⁻¹(H(m) + x·r) mod q
+4. Signature = (r, s)
+
+Signature Verification:
+Compute v and accept if v = r
+
+Critical Security Requirement:
+Random k must never repeat
+
+Sony PS3 Failure:
+Reused k allowed private key recovery
+
+Strengths:
+Standardized
+Patent-free
+Strong security
+
+Weaknesses:
+Slow signing
+Randomness critical
+No encryption
+
+ECDSA:
+Elliptic curve version
+Smaller keys
+Higher efficiency
+Used in Bitcoin and TLS
+
+---
+
+Learning Outcomes and Project Goals
+
+After implementation, you should understand:
+
+1. Mathematical foundations
+2. Algorithm steps
+3. Strengths and weaknesses
+4. Real-world usage
+5. Crypto evolution
+
+Modern Principles:
+Key size importance
+Randomness necessity
+Implementation correctness
+Cryptanalysis progress
+Security trade-offs
+
+-
