@@ -17,7 +17,7 @@ The application features a clean, "hacker/cyberpunk" aesthetic (Dark Blue/Neon G
 ## ✨ Features
 
 ### 📚 Explanation Mode (NEW!)
-*   **Visual Learning**: High-quality schematic diagrams for every algorithm (RSA, DES, S-DES, MD5, SHA-1, DSS, Diffie-Hellman).
+*   **Visual Learning**: High-quality schematic diagrams for every algorithm (RSA, DES, S-DES, MD5, SHA-1, DSS, Diffie-Hellman, JWT).
 *   **Split View Layout**: Explanations on the left, diagrams on the right for easy reading.
 *   **Comprehensive Summaries**: Detailed text breaking down the history and mechanics of each method.
 
@@ -27,6 +27,7 @@ The application features a clean, "hacker/cyberpunk" aesthetic (Dark Blue/Neon G
     *   Encrypt and Decrypt text messages.
 *   **Diffie-Hellman Key Exchange**:
     *   Simulate secure key exchange between two parties (Alice & Bob).
+    *   **Attack Simulation**: Checkbox to simulate a Man-in-the-Middle (MITM) attack, demonstrating how key exchange fails when tampered with.
     *   Visual diagram of the exchange process.
 *   **DSS (Digital Signature Standard)**:
     *   Algorithm parameter visualization (p, q, g).
@@ -35,6 +36,8 @@ The application features a clean, "hacker/cyberpunk" aesthetic (Dark Blue/Neon G
 ### 🔒 Symmetric Key Cryptography
 *   **DES (Data Encryption Standard)**:
     *   **Key Generator**: Visualizes generation of 16 round keys from 64-bit hex key.
+    *   **Full DES Logs**: Complete step-by-step execution logs for every round (Encryption & Decryption).
+    *   **Smart Workflow**: "To Input" button to instantly transfer ciphertext for verification.
     *   Attributes with **visual icons** (📂, 🔑) for better UX.
 *   **S-DES (Simplified DES)**:
     *   Educational 8-bit block cipher.
@@ -44,6 +47,12 @@ The application features a clean, "hacker/cyberpunk" aesthetic (Dark Blue/Neon G
 ### 🛡️ Hashing Algorithms
 *   **MD5 & Full MD5**: Step-by-step round visualization and full 128-bit digest calculation.
 *   **SHA-1 & SHA Family**: Generate standard 160-bit hash digests.
+
+### 🌐 Web Standards
+*   **JWT (JSON Web Token)**:
+    *   **Generator**: Create signed tokens with custom payloads.
+    *   **Verifier**: Verify token integrity and decode claims.
+    *   **Visualizer**: See the structure of Header, Payload, and Signature.
 
 ### ⚙️ Utility Features
 *   **File Operations**: Load `.txt` files directly into inputs and save results to disk.
@@ -58,8 +67,10 @@ The application features a clean, "hacker/cyberpunk" aesthetic (Dark Blue/Neon G
 
 *   **Python 3.6+**: [Download Python](https://www.python.org/downloads/)
 *   **Pillow (PIL)**: Required for handling images and diagrams.
+*   **PyJWT**: Required for JSON Web Token operations.
     ```bash
     pip install pillow
+    pip install PyJWT
     ```
 
 ### Installation
@@ -73,6 +84,7 @@ The application features a clean, "hacker/cyberpunk" aesthetic (Dark Blue/Neon G
 2.  **Install Dependencies**:
     ```bash
     pip install pillow
+    pip install PyJWT
     ```
 
 ### 🏃 How to Run
