@@ -384,8 +384,12 @@ class SecurityToolkit:
                 with open(file1_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                     parts = content.split('2. DES')
-                    if len(parts) > 0: explanations['SDES'] = parts[0].strip()
-                    if len(parts) > 1: explanations['DES'] = '2. DES' + parts[1].strip()
+                    if len(parts) > 0: 
+                        sdes_text = parts[0].strip()
+                        if sdes_text.startswith('1. SDES'):
+                            sdes_text = sdes_text.replace('1. SDES', 'SDES', 1)
+                        explanations['SDES'] = sdes_text
+                    if len(parts) > 1: explanations['DES'] = 'DES' + parts[1].strip()
                 
             # Parse File 2 (RSA, Diffie-Hellman)
             file2_path = os.path.join(summary_dir, '2.txt')
@@ -393,8 +397,15 @@ class SecurityToolkit:
                 with open(file2_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                     parts = content.split('4. Diffie-Hellman')
-                    if len(parts) > 0: explanations['RSA'] = parts[0].strip()
-                    if len(parts) > 1: explanations['Diffie-Hellman'] = '4. Diffie-Hellman' + parts[1].strip()
+                    if len(parts) > 0: 
+                        rsa_text = parts[0].strip()
+                        # Handle specific formatting in file
+                        if '، 3 RSA' in rsa_text:
+                            rsa_text = rsa_text.replace('، 3 RSA', 'RSA', 1)
+                        elif rsa_text.startswith('3. RSA'):
+                            rsa_text = rsa_text.replace('3. RSA', 'RSA', 1)
+                        explanations['RSA'] = rsa_text
+                    if len(parts) > 1: explanations['Diffie-Hellman'] = 'Diffie-Hellman' + parts[1].strip()
                 
             # Parse File 3 (MD5, SHA-1, DSS)
             file3_path = os.path.join(summary_dir, '3.txt')
@@ -402,12 +413,16 @@ class SecurityToolkit:
                 with open(file3_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                     parts = content.split('6. SHA-1')
-                    if len(parts) > 0: explanations['MD5'] = parts[0].strip()
+                    if len(parts) > 0: 
+                        md5_text = parts[0].strip()
+                        if md5_text.startswith('5. MD5'):
+                            md5_text = md5_text.replace('5. MD5', 'MD5', 1)
+                        explanations['MD5'] = md5_text
                     remain = parts[1] if len(parts) > 1 else ""
                     
                     parts2 = remain.split('7. DSS')
-                    if len(parts2) > 0: explanations['SHA-1'] = '6. SHA-1' + parts2[0].strip()
-                    if len(parts2) > 1: explanations['DSS'] = '7. DSS' + parts2[1].strip()
+                    if len(parts2) > 0: explanations['SHA-1'] = 'SHA-1' + parts2[0].strip()
+                    if len(parts2) > 1: explanations['DSS'] = 'DSS' + parts2[1].strip()
                 
         except Exception as e:
             print(f"Error loading summaries: {e}")
